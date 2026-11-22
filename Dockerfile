@@ -1,39 +1,8 @@
-pipeline {
-    agent any
 
-    environment {
-        DOCKER_IMAGE = 'kamran1013/jenkins-argocd-eks-pipeline'
-        DOCKER_TAG = 'v1'
-    }
+FROM nginx:alpine
 
-    stages {
-        stage('Checkout') {
-            steps {
-                git branch: 'main',
-                    url: 'https://github.com/mohikamran9-ship-it/jenkins-argocd-eks-project.git'
-            }
-        }
+COPY index.html /usr/share/nginx/html/index.html
 
-        stage('Build Docker Image') {
-            steps {
-                sh 'docker build -t $DOCKER_IMAGE:$DOCKER_TAG .'
-            }
-        }
+EXPOSE 80
 
-        stage('Push to Docker Hub') {
-            steps {
-                withCredentials([usernamePassword(
-                    credentialsId: 'dockerhub-creds',
-                    usernameVariable: 'DOCKER_USER',
-                    passwordVariable: 'DOCKER_PASS'
-                )]) {
-                    sh '''
-                        echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-                        docker push $DOCKER_IMAGE:$DOCKER_TAG
-                        docker logout
-                    '''
-                }
-            }
-        }
-    }
-}
+CMD ["nginx", "-g", "daemon off;"]
